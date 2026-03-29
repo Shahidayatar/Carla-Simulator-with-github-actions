@@ -1,0 +1,44 @@
+CARLA Test Run Instructions
+
+Manual run (direct command)
+1) Go to project folder on GPU server:
+cd ~/shahid_carla
+
+2) Run test in Python 3.8 container (CARLA client 0.9.14):
+podman run --rm --network host -v "$PWD":/work -w /work docker.io/python:3.8-slim bash -lc '
+python -m pip install --no-cache-dir carla==0.9.14 &&
+python /work/test_carla.py
+'
+
+Automatic run (recommended)
+1) Make script executable (first time only):
+chmod +x run_carla_test.sh
+
+2) Run everything with one command:
+./run_carla_test.sh test_carla.py
+
+What the script does automatically
+- Starts CARLA simulator container if needed.
+- Waits until CARLA is reachable on 127.0.0.1:2000.
+- Runs your Python test in a Python 3.8 container with carla==0.9.14.
+- Returns pass/fail exit code for CI/CD.
+
+------------------x-------------x-----------x-----------------
+GitHub Actions setup (automatic CI)
+1) Workflow file used:
+.github/workflows/carla-ci.yml
+
+2) Add repository secrets in GitHub -> Settings -> Secrets and variables -> Actions:
+- GPU_HOST: GPU server IP or DNS
+- GPU_USER: SSH username (example: carlactions)
+- GPU_SSH_KEY: private SSH key content (full key text)
+- GPU_PORT: SSH port (usually 22)
+
+3) Push changes to GitHub:
+git add .
+git commit -m "Add CARLA CI workflow"
+git push
+
+4) Verify run:
+- Open GitHub -> Actions -> CARLA Simulation CI
+- Check that remote step runs ./run_carla_test.sh test_carla.py and ends with success
