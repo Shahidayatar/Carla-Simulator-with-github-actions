@@ -8,34 +8,16 @@ on:
 
 jobs:
   carla-smoke-test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 45
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Copy CARLA test files to GPU server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.GPU_HOST }}
-          username: ${{ secrets.GPU_USER }}
-          key: ${{ secrets.GPU_SSH_KEY }}
-          port: ${{ secrets.GPU_PORT }}
-          source: "run_carla_test.sh,test_carla.py"
-          target: "~/shahid_carla"
-          overwrite: true
-
-      - name: Execute CARLA smoke test on GPU server
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.GPU_HOST }}
-          username: ${{ secrets.GPU_USER }}
-          key: ${{ secrets.GPU_SSH_KEY }}
-          port: ${{ secrets.GPU_PORT }}
-          script_stop: true
-          script: |
-            set -Eeuo pipefail
-            cd ~/shahid_carla
-            chmod +x run_carla_test.sh
-            ./run_carla_test.sh test_carla.py
+      - name: Execute CARLA smoke test on self-hosted GPU runner
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          chmod +x run_carla_test.sh
+          ./run_carla_test.sh test_carla.py
